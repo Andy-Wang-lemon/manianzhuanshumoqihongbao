@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>专属默契红包 By HAISNAP</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script>
+        tailwind.config = {
+            important: true,
+            theme: {
+                extend: {
+                    colors: {
+                        'horse-red': '#d32f2f',
+                        'horse-gold': '#ffc107',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --primary-red: #d32f2f;
+            --dark-red: #b71c1c;
+            --gold: #ffc107;
+            --gold-light: #ffecb3;
+            --bg-gradient: linear-gradient(180deg, #ff4757 0%, #d32f2f 50%, #c62828 100%);
+            --glass-white: rgba(255, 255, 255, 0.92);
+            --glass-text: #333;
+            --shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-gradient);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            overscroll-behavior: none;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(255, 193, 7, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 235, 59, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(255, 152, 0, 0.06) 0%, transparent 40%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(255, 215, 0, 0.15) 0%, transparent 30%),
+                radial-gradient(circle at 85% 80%, rgba(255, 193, 7, 0.12) 0%, transparent 30%),
+                radial-gradient(circle at 50% 50%, rgba(255, 152, 0, 0.08) 0%, transparent 40%);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .lantern-decoration {
+            position: fixed;
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: 2;
+            font-size: 60px;
+            animation: swing 4s ease-in-out infinite;
+        }
+
+        .lantern-decoration.top-left {
+            top: 5%;
+            left: 8%;
+        }
+
+        .lantern-decoration.top-right {
+            top: 5%;
+            right: 8%;
+            animation-delay: 2s;
+        }
+
+        @keyframes swing {
+            0%, 100% { transform: rotate(-8deg); }
+            50% { transform: rotate(8deg); }
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        #fireworks-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            padding: 10px 15px;
+            padding-bottom: 10px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            transform: translateY(20px);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .page.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            z-index: 20;
+        }
+
+        .card {
+            background: var(--glass-white);
+            color: var(--glass-text);
+            border-radius: 16px;
+            padding: 15px;
+            width: 100%;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        h1, h2, h3 {
+            margin: 0;
+            font-weight: 700;
+        }
+        
+        .page-title {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 24px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .sub-title {
+            font-size: 14px;
+            opacity: 0.9;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .quiz-hint {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--gold);
+            text-align: center;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            line-height: 1.2;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+            width: 100%;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 6px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            background: #f9f9f9;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-red);
+            background: #fff;
+        }
+
+        .btn {
+            background: var(--gold);
+            color: #d32f2f;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            box-shadow: 0 4px 10px rgba(255, 193, 7, 0.4);
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+            width: 100%;
+            text-align: center;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+            box-shadow: 0 2px 5px rgba(255, 193, 7, 0.4);
+        }
+
+        .btn.outline {
+            background: transparent;
+            border: 2px solid var(--gold);
+            color: var(--gold);
+            box-shadow: none;
+        }
+        
+        .btn.small {
+            padding: 8px 16px;
+            font-size: 14px;
+            width: auto;
+        }
+
+        .option-btn {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            border: 2px solid #eee;
+            background: #fff;
+            border-radius: 12px;
+            text-align: left;
+            font-size: 15px;
+            color: #333;
+            transition: all 0.2s;
+        }
+
+        .option-btn:active {
+            background: #fff8e1;
+            border-color: var(--gold);
+            transform: scale(0.98);
+        }
+
+        .option-btn.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .option-btn.correct {
+            background: #4caf50;
+            border-color: #4caf50;
+            color: #fff;
+        }
+
+        .option-btn.wrong {
+            background: #f44336;
+            border-color: #f44336;
+            color: #fff;
+        }
+
+        .big-red-packet-wrapper {
+            width: 100%;
+            max-width: 340px;
+            padding: 20px;
+        }
+
+        .big-red-packet {
+            width: 100%;
+            min-height: 420px;
+            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+            border-radius: 20px;
+            position: relative;
+            padding: 40px 30px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            animation: breathe 3s infinite ease-in-out;
+            border: 3px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .big-packet-title {
+            font-size: 26px;
+            line-height: 1.5;
+            text-align: center;
+            color: #fff;
+            font-weight: 700;
+            margin: 0;
+            padding: 20px 0;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .big-packet-subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.9);
+            text-align: center;
+            margin: 10px 0 30px 0;
+            opacity: 0.95;
+        }
+
+        .big-packet-open-btn {
+            width: 120px;
+            height: 120px;
+            background: var(--gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: 900;
+            color: #b71c1c;
+            box-shadow: 0 8px 20px rgba(255, 193, 7, 0.5);
+            cursor: pointer;
+            transition: transform 0.2s;
+            animation: shake 0.5s ease-in-out infinite alternate;
+            border: 4px solid rgba(183, 28, 28, 0.2);
+        }
+
+        .big-packet-open-btn:active {
+            transform: scale(0.92);
+        }
+
+        .red-packet-container {
+            width: 150px;
+            height: 200px;
+            background: #d32f2f;
+            border-radius: 12px;
+            position: relative;
+            margin: 10px auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            cursor: pointer;
+            overflow: hidden;
+            animation: breathe 3s infinite ease-in-out;
+            transform-origin: center bottom;
+        }
+
+        .red-packet-lid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 65px;
+            background: #b71c1c;
+            border-radius: 0 0 50% 50%;
+            z-index: 2;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .red-packet-circle {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 55px;
+            height: 55px;
+            background: var(--gold);
+            border-radius: 50%;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: #b71c1c;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        @keyframes shake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(5deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(-5deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        .shake-anim {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .modal-mask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s;
+            padding: 30px;
+        }
+
+        .modal-mask.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: #fff;
+            width: 100%;
+            max-width: 340px;
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            transform: scale(0.8);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: #333;
+        }
+
+        .modal-mask.show .modal-content {
+            transform: scale(1);
+        }
+
+        .result-item {
+            background: #fff3e0;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #d84315;
+            text-align: left;
+            display: flex;
+            align-items: center;
+        }
+        .result-item::before {
+            content: '🎁';
+            margin-right: 8px;
+        }
+
+        .bottom-action {
+            position: relative;
+            margin-top: auto;
+            padding-top: 10px;
+            width: 100%;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .question-editor {
+            border-left: 3px solid var(--primary-red);
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 5px;
+        }
+        
+        .radio-label {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .radio-label input {
+            margin-right: 5px;
+        }
+
+        .particle-text {
+            background: linear-gradient(to right, #fff, #ffd54f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--gold);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .hidden { display: none !important; }
+        .text-gold { color: var(--gold); }
+        .mt-4 { margin-top: 1rem; }
+        .mb-4 { margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+
+    <div class="lantern-decoration top-left">🏮</div>
+    <div class="lantern-decoration top-right">🏮</div>
+
+    <canvas id="fireworks-canvas"></canvas>
+
+    <div class="app-container">
+
+        <div id="page-author" class="page">
+            <h1 class="page-title text-gold">新年专属默契红包</h1>
+            <p class="sub-title">制作一个专属红包,测测你们的默契度</p>
+            
+            <div class="card">
+                <h3>第一步：基本信息</h3>
+                <div class="form-group mt-4">
+                    <label>我是谁 (发起人)</label>
+                    <input type="text" id="sender-name" placeholder="例如：阿青" maxlength="10">
+                </div>
+                <div class="form-group">
+                    <label>发给谁 (收件人)</label>
+                    <input type="text" id="receiver-name" placeholder="例如：妈妈" maxlength="10">
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>第二步：默契大考验 (6题)</h3>
+                <p style="font-size:12px; color:#999; margin-bottom:15px;">请填写6道题目,可参考灰色提示文字</p>
+                <div id="questions-container"></div>
+            </div>
+
+            <div class="card">
+                <h3>第三步：塞入红包 (最多3个)</h3>
+                <p style="font-size:12px; color:#999; margin-bottom:15px;">答对的题越多，默契度越高，能拆的红包数量就越多哦</p>
+                <div class="form-group">
+                    <label>礼物 1</label>
+                    <input type="text" class="gift-input" placeholder="例如：一袋薯片" maxlength="20">
+                </div>
+                <div class="form-group">
+                    <label>礼物 2 (选填)</label>
+                    <input type="text" class="gift-input" placeholder="例如：10元红包" maxlength="20">
+                </div>
+                <div class="form-group">
+                    <label>礼物 3 (选填)</label>
+                    <input type="text" class="gift-input" placeholder="例如：一张按摩券" maxlength="20">
+                </div>
+            </div>
+            
+            <div style="height: 20px;"></div>
+            <button class="btn" onclick="app.generateShare()">生成专属红包</button>
+            <div style="height: 20px; text-align: center;">
+                <span onclick="app.resetAuthor()" style="font-size:12px; color:rgba(255,255,255,0.6); text-decoration: underline;">清空重置</span>
+            </div>
+        </div>
+
+        <div id="page-cover" class="page">
+            <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;">
+                <div class="big-red-packet-wrapper">
+                    <div class="big-red-packet">
+                        <h1 class="big-packet-title">
+                            给 <span id="cover-receiver" class="text-gold"></span> 的<br>专属新年默契红包
+                        </h1>
+                        <p class="big-packet-subtitle">来自 <span id="cover-sender"></span> 的新年祝福</p>
+                        <div class="big-packet-open-btn" onclick="app.startQuiz()">拆</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-quiz" class="page">
+            <p class="quiz-hint">和我默契度越高<br>能拆的红包数量就越多哦！</p>
+            
+            <div class="w-full">
+                <div class="progress-bar">
+                    <div id="quiz-progress" class="progress-fill"></div>
+                </div>
+                <div style="text-align: right; font-size: 11px; opacity: 0.8;">
+                    第 <span id="current-q-num">1</span> / 6 题
+                </div>
+            </div>
+
+            <div style="flex: 1; display: flex; align-items: center; width: 100%;">
+                <div class="card" id="quiz-card" style="min-height: 160px; display: flex; flex-direction: column; justify-content: center;">
+                    <h3 id="quiz-stem" style="font-size: 16px; margin-bottom: 15px; text-align: center;">题目内容</h3>
+                    <div id="quiz-options"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-result" class="page">
+            <div style="margin-top: 10px; text-align: center; width: 100%;">
+                <div style="font-size: 14px; opacity: 0.8; margin-bottom: 6px;">我们的默契度</div>
+                <h1 id="result-affinity" style="font-size: 48px; margin-bottom: 10px;" class="text-gold">0%</h1>
+                <p id="result-comment" style="font-size: 15px; margin-bottom: 15px;">文案占位</p>
+                
+                <div class="card" style="background: rgba(255,255,255,0.2); color: #fff;">
+                    <p style="margin: 0;">根据默契表现</p>
+                    <p style="margin-top: 8px; margin-bottom: 0;">你可以拆 <span id="result-count" class="text-gold" style="font-size: 22px; font-weight: bold;">0</span> 个红包</p>
+                </div>
+            </div>
+            
+            <div class="bottom-action">
+                <button class="btn" onclick="app.goToGift()">开始拆红包</button>
+            </div>
+        </div>
+
+        <div id="page-gift" class="page" style="justify-content: center;">
+            <div style="text-align: center;">
+                <h2 style="margin: 0 0 15px 0; font-size: 20px;">还可以拆 <span id="gift-left-count" class="text-gold">0</span> 个红包</h2>
+                
+                <div class="red-packet-container" id="red-packet-btn" onclick="app.openGift()">
+                    <div class="red-packet-lid"></div>
+                    <div class="red-packet-circle">拆</div>
+                </div>
+                
+                <p style="margin: 10px 0 0 0; opacity: 0.7; font-size: 13px;">点击红包拆开</p>
+            </div>
+        </div>
+
+        <div id="page-summary" class="page">
+            <h2 class="text-gold" style="margin-top: 10px; font-size: 24px;">🎁 祝你新年快乐！</h2>
+            <div style="font-size: 13px; margin-bottom: 10px; opacity: 0.8;">默契度 <span id="summary-affinity"></span>%</div>
+
+            <div id="summary-list" style="width: 100%; margin-bottom: 10px;"></div>
+
+            <div class="bottom-action">
+                <button class="btn" onclick="app.copyShareText()">告诉他</button>
+                <div style="text-align: center; margin-top: 10px;">
+                    <button class="btn outline small" onclick="app.resetToHome()">我也要制作</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="modal-mask" class="modal-mask">
+        <div class="modal-content">
+            <h3 id="modal-title" style="font-size: 22px; margin-bottom: 15px; color: #d32f2f;">标题</h3>
+            <p id="modal-text" style="font-size: 16px; margin-bottom: 25px; line-height: 1.5; word-break: break-all;">内容</p>
+            <button class="btn" id="modal-btn">确定</button>
+        </div>
+    </div>
+
+    <script>
+        // LZ字符串压缩算法
+        const LZString = {
+            compressToBase64: function(input) {
+                if (input == null) return "";
+                const res = this._compress(input, 6, function(a){return 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='.charAt(a);});
+                switch (res.length % 4) {
+                    default: case 0: return res;
+                    case 1: return res+"===";
+                    case 2: return res+"==";
+                    case 3: return res+"=";
+                }
+            },
+            decompressFromBase64: function(input) {
+                if (input == null) return "";
+                if (input == "") return null;
+                return this._decompress(input.length, 32, function(index) { return 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='.indexOf(input.charAt(index)); });
+            },
+            _compress: function(uncompressed, bitsPerChar, getCharFromInt) {
+                if (uncompressed == null) return "";
+                let i, value, context_dictionary = {}, context_dictionaryToCreate = {}, context_c = "", context_wc = "", context_w = "",
+                    context_enlargeIn = 2, context_dictSize = 3, context_numBits = 2, context_data = [], context_data_val = 0, context_data_position = 0;
+                for (let ii = 0; ii < uncompressed.length; ii += 1) {
+                    context_c = uncompressed.charAt(ii);
+                    if (!Object.prototype.hasOwnProperty.call(context_dictionary,context_c)) {
+                        context_dictionary[context_c] = context_dictSize++;
+                        context_dictionaryToCreate[context_c] = true;
+                    }
+                    context_wc = context_w + context_c;
+                    if (Object.prototype.hasOwnProperty.call(context_dictionary,context_wc)) {
+                        context_w = context_wc;
+                    } else {
+                        if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate,context_w)) {
+                            if (context_w.charCodeAt(0)<256) {
+                                for (i=0 ; i<context_numBits ; i++) {
+                                    context_data_val = (context_data_val << 1);
+                                    if (context_data_position == bitsPerChar-1) {
+                                        context_data_position = 0;
+                                        context_data.push(getCharFromInt(context_data_val));
+                                        context_data_val = 0;
+                                    } else {
+                                        context_data_position++;
+                                    }
+                                }
+                                value = context_w.charCodeAt(0);
+                                for (i=0 ; i<8 ; i++) {
+                                    context_data_val = (context_data_val << 1) | (value&1);
+                                    if (context_data_position == bitsPerChar-1) {
+                                        context_data_position = 0;
+                                        context_data.push(getCharFromInt(context_data_val));
+                                        context_data_val = 0;
+                                    } else {
+                                        context_data_position++;
+                                    }
+                                    value = value >> 1;
+                                }
+                            } else {
+                                value = 1;
+                                for (i=0 ; i<context_numBits ; i++) {
+                                    context_data_val = (context_data_val << 1) | value;
+                                    if (context_data_position == bitsPerChar-1) {
+                                        context_data_position = 0;
+                                        context_data.push(getCharFromInt(context_data_val));
+                                        context_data_val = 0;
+                                    } else {
+                                        context_data_position++;
+                                    }
+                                    value = 0;
+                                }
+                                value = context_w.charCodeAt(0);
+                                for (i=0 ; i<16 ; i++) {
+                                    context_data_val = (context_data_val << 1) | (value&1);
+                                    if (context_data_position == bitsPerChar-1) {
+                                        context_data_position = 0;
+                                        context_data.push(getCharFromInt(context_data_val));
+                                        context_data_val = 0;
+                                    } else {
+                                        context_data_position++;
+                                    }
+                                    value = value >> 1;
+                                }
+                            }
+                            context_enlargeIn--;
+                            if (context_enlargeIn == 0) {
+                                context_enlargeIn = Math.pow(2, context_numBits);
+                                context_numBits++;
+                            }
+                            delete context_dictionaryToCreate[context_w];
+                        } else {
+                            value = context_dictionary[context_w];
+                            for (i=0 ; i<context_numBits ; i++) {
+                                context_data_val = (context_data_val << 1) | (value&1);
+                                if (context_data_position == bitsPerChar-1) {
+                                    context_data_position = 0;
+                                    context_data.push(getCharFromInt(context_data_val));
+                                    context_data_val = 0;
+                                } else {
+                                    context_data_position++;
+                                }
+                                value = value >> 1;
+                            }
+                        }
+                        context_enlargeIn--;
+                        if (context_enlargeIn == 0) {
+                            context_enlargeIn = Math.pow(2, context_numBits);
+                            context_numBits++;
+                        }
+                        context_dictionary[context_wc] = context_dictSize++;
+                        context_w = String(context_c);
+                    }
+                }
+                if (context_w !== "") {
+                    if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate,context_w)) {
+                        if (context_w.charCodeAt(0)<256) {
+                            for (i=0 ; i<context_numBits ; i++) {
+                                context_data_val = (context_data_val << 1);
+                                if (context_data_position == bitsPerChar-1) {
+                                    context_data_position = 0;
+                                    context_data.push(getCharFromInt(context_data_val));
+                                    context_data_val = 0;
+                                } else {
+                                    context_data_position++;
+                                }
+                            }
+                            value = context_w.charCodeAt(0);
+                            for (i=0 ; i<8 ; i++) {
+                                context_data_val = (context_data_val << 1) | (value&1);
+                                if (context_data_position == bitsPerChar-1) {
+                                    context_data_position = 0;
+                                    context_data.push(getCharFromInt(context_data_val));
+                                    context_data_val = 0;
+                                } else {
+                                    context_data_position++;
+                                }
+                                value = value >> 1;
+                            }
+                        } else {
+                            value = 1;
+                            for (i=0 ; i<context_numBits ; i++) {
+                                context_data_val = (context_data_val << 1) | value;
+                                if (context_data_position == bitsPerChar-1) {
+                                    context_data_position = 0;
+                                    context_data.push(getCharFromInt(context_data_val));
+                                    context_data_val = 0;
+                                } else {
+                                    context_data_position++;
+                                }
+                                value = 0;
+                            }
+                            value = context_w.charCodeAt(0);
+                            for (i=0 ; i<16 ; i++) {
+                                context_data_val = (context_data_val << 1) | (value&1);
+                                if (context_data_position == bitsPerChar-1) {
+                                    context_data_position = 0;
+                                    context_data.push(getCharFromInt(context_data_val));
+                                    context_data_val = 0;
+                                } else {
+                                    context_data_position++;
+                                }
+                                value = value >> 1;
+                            }
+                        }
+                        context_enlargeIn--;
+                        if (context_enlargeIn == 0) {
+                            context_enlargeIn = Math.pow(2, context_numBits);
+                            context_numBits++;
+                        }
+                        delete context_dictionaryToCreate[context_w];
+                    } else {
+                        value = context_dictionary[context_w];
+                        for (i=0 ; i<context_numBits ; i++) {
+                            context_data_val = (context_data_val << 1) | (value&1);
+                            if (context_data_position == bitsPerChar-1) {
+                                context_data_position = 0;
+                                context_data.push(getCharFromInt(context_data_val));
+                                context_data_val = 0;
+                            } else {
+                                context_data_position++;
+                            }
+                            value = value >> 1;
+                        }
+                    }
+                    context_enlargeIn--;
+                    if (context_enlargeIn == 0) {
+                        context_enlargeIn = Math.pow(2, context_numBits);
+                        context_numBits++;
+                    }
+                }
+                value = 2;
+                for (i=0 ; i<context_numBits ; i++) {
+                    context_data_val = (context_data_val << 1) | (value&1);
+                    if (context_data_position == bitsPerChar-1) {
+                        context_data_position = 0;
+                        context_data.push(getCharFromInt(context_data_val));
+                        context_data_val = 0;
+                    } else {
+                        context_data_position++;
+                    }
+                    value = value >> 1;
+                }
+                while (true) {
+                    context_data_val = (context_data_val << 1);
+                    if (context_data_position == bitsPerChar-1) {
+                        context_data.push(getCharFromInt(context_data_val));
+                        break;
+                    }
+                    else context_data_position++;
+                }
+                return context_data.join('');
+            },
+            _decompress: function(length, resetValue, getNextValue) {
+                let dictionary = [], next, enlargeIn = 4, dictSize = 4, numBits = 3, entry = "", result = [],
+                    i, w, bits, resb, maxpower, power, c, data = {val:getNextValue(0), position:resetValue, index:1};
+                for (i = 0; i < 3; i += 1) { dictionary[i] = i; }
+                bits = 0; maxpower = Math.pow(2,2); power=1;
+                while (power!=maxpower) {
+                    resb = data.val & data.position;
+                    data.position >>= 1;
+                    if (data.position == 0) {
+                        data.position = resetValue;
+                        data.val = getNextValue(data.index++);
+                    }
+                    bits |= (resb>0 ? 1 : 0) * power;
+                    power <<= 1;
+                }
+                switch (next = bits) {
+                    case 0:
+                        bits = 0; maxpower = Math.pow(2,8); power=1;
+                        while (power!=maxpower) {
+                            resb = data.val & data.position;
+                            data.position >>= 1;
+                            if (data.position == 0) {
+                                data.position = resetValue;
+                                data.val = getNextValue(data.index++);
+                            }
+                            bits |= (resb>0 ? 1 : 0) * power;
+                            power <<= 1;
+                        }
+                        c = String.fromCharCode(bits);
+                        break;
+                    case 1:
+                        bits = 0; maxpower = Math.pow(2,16); power=1;
+                        while (power!=maxpower) {
+                            resb = data.val & data.position;
+                            data.position >>= 1;
+                            if (data.position == 0) {
+                                data.position = resetValue;
+                                data.val = getNextValue(data.index++);
+                            }
+                            bits |= (resb>0 ? 1 : 0) * power;
+                            power <<= 1;
+                        }
+                        c = String.fromCharCode(bits);
+                        break;
+                    case 2: return "";
+                }
+                dictionary[3] = c;
+                w = c;
+                result.push(c);
+                while (true) {
+                    if (data.index > length) { return ""; }
+                    bits = 0; maxpower = Math.pow(2,numBits); power=1;
+                    while (power!=maxpower) {
+                        resb = data.val & data.position;
+                        data.position >>= 1;
+                        if (data.position == 0) {
+                            data.position = resetValue;
+                            data.val = getNextValue(data.index++);
+                        }
+                        bits |= (resb>0 ? 1 : 0) * power;
+                        power <<= 1;
+                    }
+                    switch (c = bits) {
+                        case 0:
+                            bits = 0; maxpower = Math.pow(2,8); power=1;
+                            while (power!=maxpower) {
+                                resb = data.val & data.position;
+                                data.position >>= 1;
+                                if (data.position == 0) {
+                                    data.position = resetValue;
+                                    data.val = getNextValue(data.index++);
+                                }
+                                bits |= (resb>0 ? 1 : 0) * power;
+                                power <<= 1;
+                            }
+                            dictionary[dictSize++] = String.fromCharCode(bits);
+                            c = dictSize-1;
+                            enlargeIn--;
+                            break;
+                        case 1:
+                            bits = 0; maxpower = Math.pow(2,16); power=1;
+                            while (power!=maxpower) {
+                                resb = data.val & data.position;
+                                data.position >>= 1;
+                                if (data.position == 0) {
+                                    data.position = resetValue;
+                                    data.val = getNextValue(data.index++);
+                                }
+                                bits |= (resb>0 ? 1 : 0) * power;
+                                power <<= 1;
+                            }
+                            dictionary[dictSize++] = String.fromCharCode(bits);
+                            c = dictSize-1;
+                            enlargeIn--;
+                            break;
+                        case 2: return result.join('');
+                    }
+                    if (enlargeIn == 0) {
+                        enlargeIn = Math.pow(2, numBits);
+                        numBits++;
+                    }
+                    if (dictionary[c]) {
+                        entry = dictionary[c];
+                    } else {
+                        if (c === dictSize) {
+                            entry = w + w.charAt(0);
+                        } else {
+                            return null;
+                        }
+                    }
+                    result.push(entry);
+                    dictionary[dictSize++] = w + entry.charAt(0);
+                    enlargeIn--;
+                    w = entry;
+                    if (enlargeIn == 0) {
+                        enlargeIn = Math.pow(2, numBits);
+                        numBits++;
+                    }
+                }
+            }
+        };
+
+        const app = {
+            state: {
+                role: 'author',
+                data: {
+                    sender: '',
+                    receiver: '',
+                    questions: [],
+                    gifts: []
+                },
+                quiz: {
+                    currentIdx: 0,
+                    correctCount: 0,
+                    maxGifts: 0,
+                    openedCount: 0,
+                    openedGifts: [],
+                    pool: []
+                }
+            },
+
+            init() {
+                const hash = window.location.hash.substring(1);
+                if (hash) {
+                    try {
+                        // 尝试新格式（压缩）
+                        let data;
+                        if (hash.includes('{')) {
+                            // 旧格式兼容
+                            const decoded = decodeURIComponent(hash);
+                            data = JSON.parse(decoded);
+                        } else {
+                            // 新格式（压缩）
+                            const decompressed = LZString.decompressFromBase64(hash);
+                            const parsed = JSON.parse(decompressed);
+                            // 简化格式转完整格式
+                            data = {
+                                sender: parsed.s,
+                                receiver: parsed.r,
+                                gifts: parsed.g,
+                                questions: parsed.q.map(q => ({
+                                    stem: q.t,
+                                    options: q.o,
+                                    ans: q.a
+                                }))
+                            };
+                        }
+                        this.state.data = data;
+                        this.state.role = 'user';
+                        this.startUserFlow();
+                    } catch (e) {
+                        console.error('Data parse failed', e);
+                        this.resetToHome();
+                    }
+                } else {
+                    this.state.role = 'author';
+                    const draft = localStorage.getItem('redpacket_draft');
+                    if (draft) {
+                        this.state.data = JSON.parse(draft);
+                        this.fillAuthorForm();
+                    } else {
+                        this.initDefaultQuestions();
+                    }
+                    this.showPage('page-author');
+                }
+                
+                fireworks.init();
+            },
+
+            initDefaultQuestions() {
+                const defaults = [
+                    { stem: '', options: ['', '', ''], ans: 0 },
+                    { stem: '', options: ['', '', ''], ans: 0 },
+                    { stem: '', options: ['', '', ''], ans: 0 },
+                    { stem: '', options: ['', '', ''], ans: 0 },
+                    { stem: '', options: ['', '', ''], ans: 0 },
+                    { stem: '', options: ['', '', ''], ans: 0 }
+                ];
+                this.state.data.questions = defaults;
+                this.fillAuthorForm();
+            },
+
+            fillAuthorForm() {
+                document.getElementById('sender-name').value = this.state.data.sender || '';
+                document.getElementById('receiver-name').value = this.state.data.receiver || '';
+                
+                const giftInputs = document.querySelectorAll('.gift-input');
+                if (this.state.data.gifts) {
+                    this.state.data.gifts.forEach((g, i) => {
+                        if (giftInputs[i]) giftInputs[i].value = g;
+                    });
+                }
+
+                const container = document.getElementById('questions-container');
+                container.innerHTML = '';
+                this.state.data.questions.forEach((q, idx) => {
+                    const placeholders = [
+                        { stem: '我最喜欢的食物是？', options: ['火锅', '烧烤', '日料'] },
+                        { stem: '我平时几点睡觉？', options: ['11点前', '12点左右', '熬夜冠军'] },
+                        { stem: '我最想去哪里旅游？', options: ['海边', '深山', '大草原'] },
+                        { stem: '我的口头禅是？', options: ['随便', '好的', 'emmm'] },
+                        { stem: '我最害怕什么？', options: ['鬼', '虫子', '没钱'] },
+                        { stem: '今年过年我最想要？', options: ['暴富', '脱单', '瘦十斤'] }
+                    ];
+                    const ph = placeholders[idx] || { stem: '请输入问题', options: ['选项1', '选项2', '选项3'] };
+                    const html = `
+                        <div class="question-editor">
+                            <div class="form-group">
+                                <label>问题 ${idx + 1}</label>
+                                <input type="text" class="q-stem" data-idx="${idx}" value="${q.stem}" placeholder="${ph.stem}">
+                            </div>
+                            <div class="form-group" style="margin-bottom:8px;">
+                                <input type="text" class="q-opt" data-idx="${idx}" data-opt="0" value="${q.options[0]}" placeholder="${ph.options[0]}" style="font-size:14px; padding:8px;">
+                            </div>
+                            <div class="form-group" style="margin-bottom:8px;">
+                                <input type="text" class="q-opt" data-idx="${idx}" data-opt="1" value="${q.options[1]}" placeholder="${ph.options[1]}" style="font-size:14px; padding:8px;">
+                            </div>
+                            <div class="form-group">
+                                <input type="text" class="q-opt" data-idx="${idx}" data-opt="2" value="${q.options[2]}" placeholder="${ph.options[2]}" style="font-size:14px; padding:8px;">
+                            </div>
+                            <div class="radio-group">
+                                <span style="font-size:12px; color:#666; line-height:20px;">正确答案：</span>
+                                <label class="radio-label"><input type="radio" name="ans-${idx}" value="0" ${q.ans == 0 ? 'checked' : ''}>选项1</label>
+                                <label class="radio-label"><input type="radio" name="ans-${idx}" value="1" ${q.ans == 1 ? 'checked' : ''}>选项2</label>
+                                <label class="radio-label"><input type="radio" name="ans-${idx}" value="2" ${q.ans == 2 ? 'checked' : ''}>选项3</label>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', html);
+                });
+            },
+
+            saveDraft() {
+                const sender = document.getElementById('sender-name').value.trim();
+                const receiver = document.getElementById('receiver-name').value.trim();
+                
+                const gifts = [];
+                document.querySelectorAll('.gift-input').forEach(input => {
+                    if (input.value.trim()) gifts.push(input.value.trim());
+                });
+
+                const questions = [];
+                for(let i=0; i<6; i++) {
+                    const stem = document.querySelector(`.q-stem[data-idx="${i}"]`).value.trim();
+                    const opts = [
+                        document.querySelector(`.q-opt[data-idx="${i}"][data-opt="0"]`).value.trim(),
+                        document.querySelector(`.q-opt[data-idx="${i}"][data-opt="1"]`).value.trim(),
+                        document.querySelector(`.q-opt[data-idx="${i}"][data-opt="2"]`).value.trim()
+                    ];
+                    const ans = document.querySelector(`input[name="ans-${i}"]:checked`)?.value || 0;
+                    
+                    if (!stem || opts.some(o => !o)) return { valid: false, msg: `请完整填写第 ${i+1} 题` };
+                    
+                    questions.push({ stem, options: opts, ans: parseInt(ans) });
+                }
+
+                if (!sender) return { valid: false, msg: '请填写你的名字' };
+                if (!receiver) return { valid: false, msg: '请填写收件人名字' };
+                if (gifts.length === 0) return { valid: false, msg: '至少填写一个红包礼物' };
+
+                const data = { sender, receiver, gifts, questions };
+                this.state.data = data;
+                localStorage.setItem('redpacket_draft', JSON.stringify(data));
+                return { valid: true, data };
+            },
+
+            generateShare() {
+                const result = this.saveDraft();
+                if (!result.valid) {
+                    this.showModal('提示', result.msg);
+                    return;
+                }
+
+                // 简化数据结构，使用单字符key名
+                const compactData = {
+                    s: result.data.sender,
+                    r: result.data.receiver,
+                    g: result.data.gifts,
+                    q: result.data.questions.map(q => ({
+                        t: q.stem,
+                        o: q.options,
+                        a: q.ans
+                    }))
+                };
+                
+                // 使用LZ压缩 + Base64编码，直接作为哈希值
+                const jsonStr = JSON.stringify(compactData);
+                const compressed = LZString.compressToBase64(jsonStr);
+                
+                // 生成最短URL：直接使用压缩数据作为哈希
+                const baseUrl = window.location.origin + window.location.pathname;
+                const shareUrl = `${baseUrl}#${compressed}`;
+                
+                const shareText = `🧧 祝你马年快乐！我给你制作了一个新年专属默契红包，快来完成挑战抽取红包奖励吧！\n\n${shareUrl}`;
+                
+                this.copyToClipboard(shareText, () => {
+                    this.showModal('制作成功', '专属链接和祝福文案已复制！<br>快去发给 TA 吧！');
+                }, () => {
+                    this.showModal('制作成功', '请长按复制以下内容：<br><br>' + shareText.replace(/\n/g, '<br>'));
+                });
+            },
+
+            resetAuthor() {
+                if (confirm('确定要清空所有内容重新制作吗？')) {
+                    localStorage.removeItem('redpacket_draft');
+                    this.state.data = { sender: '', receiver: '', questions: [], gifts: [] };
+                    this.initDefaultQuestions();
+                    window.scrollTo(0, 0);
+                }
+            },
+
+            startUserFlow() {
+                document.getElementById('cover-receiver').textContent = this.state.data.receiver;
+                document.getElementById('cover-sender').textContent = this.state.data.sender;
+                document.title = `给${this.state.data.receiver}的专属默契红包 By HAISNAP`;
+                
+                fireworks.start();
+                this.showPage('page-cover');
+            },
+
+            startQuiz() {
+                this.state.quiz.currentIdx = 0;
+                this.state.quiz.correctCount = 0;
+                this.state.quiz.pool = [...this.state.data.gifts];
+                
+                fireworks.start();
+                this.renderQuestion();
+                this.showPage('page-quiz');
+            },
+
+            renderQuestion() {
+                const idx = this.state.quiz.currentIdx;
+                const q = this.state.data.questions[idx];
+                
+                document.getElementById('current-q-num').textContent = idx + 1;
+                document.getElementById('quiz-progress').style.width = `${((idx) / 6) * 100}%`;
+                
+                const card = document.getElementById('quiz-card');
+                card.style.opacity = 0;
+                card.style.transform = 'translateY(10px)';
+                
+                setTimeout(() => {
+                    document.getElementById('quiz-stem').textContent = q.stem;
+                    const optsContainer = document.getElementById('quiz-options');
+                    optsContainer.innerHTML = '';
+                    
+                    q.options.forEach((opt, i) => {
+                        const btn = document.createElement('button');
+                        btn.className = 'option-btn';
+                        btn.textContent = opt;
+                        btn.onclick = () => this.answerQuestion(i);
+                        optsContainer.appendChild(btn);
+                    });
+                    
+                    card.style.opacity = 1;
+                    card.style.transform = 'translateY(0)';
+                    card.style.transition = 'all 0.3s ease';
+                }, 200);
+            },
+
+            answerQuestion(selectedOptIndex) {
+                const idx = this.state.quiz.currentIdx;
+                const q = this.state.data.questions[idx];
+                const isCorrect = selectedOptIndex === q.ans;
+
+                const optionBtns = document.querySelectorAll('.option-btn');
+                optionBtns.forEach(btn => btn.classList.add('disabled'));
+
+                const selectedBtn = optionBtns[selectedOptIndex];
+                selectedBtn.classList.add(isCorrect ? 'correct' : 'wrong');
+
+                if (!isCorrect) {
+                    const correctBtn = optionBtns[q.ans];
+                    correctBtn.classList.add('correct');
+                }
+
+                if (isCorrect) {
+                    this.state.quiz.correctCount++;
+                }
+
+                setTimeout(() => {
+                    this.state.quiz.currentIdx++;
+                    
+                    if (this.state.quiz.currentIdx >= 6) {
+                        document.getElementById('quiz-progress').style.width = '100%';
+                        setTimeout(() => this.showResult(), 300);
+                    } else {
+                        this.renderQuestion();
+                    }
+                }, 1000);
+            },
+
+            showResult() {
+                const correct = this.state.quiz.correctCount;
+                const affinity = Math.round((correct / 6) * 100);
+                
+                document.getElementById('result-affinity').textContent = `${affinity}%`;
+                
+                let comment = '';
+                if (affinity < 60) comment = '即使默契还在培养,心意永远满分！';
+                else if (affinity < 90) comment = '这默契度,不愧是这种关系！';
+                else comment = '天哪！你简直是肚子里的蛔虫！';
+                document.getElementById('result-comment').textContent = comment;
+
+                let giftCount = 1;
+                if (correct >= 2) giftCount = 2;
+                if (correct >= 4) giftCount = 3;
+                if (correct >= 5) giftCount = 4;
+                if (correct === 6) giftCount = 5;
+
+                this.state.quiz.maxGifts = giftCount;
+                document.getElementById('result-count').textContent = giftCount;
+                
+                this.showPage('page-result');
+            },
+
+            goToGift() {
+                this.updateGiftUI();
+                this.showPage('page-gift');
+            },
+
+            updateGiftUI() {
+                const left = this.state.quiz.maxGifts - this.state.quiz.openedCount;
+                document.getElementById('gift-left-count').textContent = left;
+                
+                if (left <= 0) {
+                    setTimeout(() => this.showSummary(), 500);
+                }
+            },
+
+            openGift() {
+                const btn = document.getElementById('red-packet-btn');
+                if (btn.classList.contains('shake-anim')) return;
+
+                btn.classList.add('shake-anim');
+                
+                setTimeout(() => {
+                    btn.classList.remove('shake-anim');
+                    
+                    let prize = '';
+                    if (this.state.quiz.pool.length > 0) {
+                        const rIdx = Math.floor(Math.random() * this.state.quiz.pool.length);
+                        prize = this.state.quiz.pool.splice(rIdx, 1)[0];
+                    }
+
+                    this.state.quiz.openedGifts.push(prize);
+                    this.state.quiz.openedCount++;
+                    
+                    this.showModal('✨ 你拆到了', `<div style="font-size:24px; color:#d32f2f; font-weight:bold; margin:10px 0;">${prize}</div>`, () => {
+                        this.updateGiftUI();
+                        document.getElementById('modal-mask').classList.remove('show');
+                    });
+                }, 600);
+            },
+
+            showSummary() {
+                const affinity = Math.round((this.state.quiz.correctCount / 6) * 100);
+                document.getElementById('summary-affinity').textContent = affinity;
+                
+                const listEl = document.getElementById('summary-list');
+                listEl.innerHTML = '';
+                this.state.quiz.openedGifts.forEach(g => {
+                    const div = document.createElement('div');
+                    div.className = 'result-item';
+                    div.textContent = g;
+                    listEl.appendChild(div);
+                });
+                
+                fireworks.start();
+                this.showPage('page-summary');
+            },
+
+            copyShareText() {
+                const affinity = Math.round((this.state.quiz.correctCount / 6) * 100);
+                const giftsStr = this.state.quiz.openedGifts.map((g,i) => `${i+1}) ${g}`).join('\n');
+                const text = `我在【给${this.state.data.receiver}的专属默契红包】里,\n默契度是 ${affinity}%,\n拆到了这些礼物：\n${giftsStr}\n\n新年快乐！`;
+                
+                this.copyToClipboard(text, () => {
+                    this.showModal('提示', '文案已复制！<br>可以直接去微信粘贴发给 TA 啦');
+                });
+            },
+
+            resetToHome() {
+                window.location.href = window.location.pathname;
+            },
+
+            showPage(pageId) {
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.getElementById(pageId).classList.add('active');
+                window.scrollTo(0,0);
+            },
+
+            showModal(title, content, onConfirm) {
+                document.getElementById('modal-title').textContent = title;
+                document.getElementById('modal-text').innerHTML = content;
+                const modal = document.getElementById('modal-mask');
+                modal.classList.add('show');
+                
+                const btn = document.getElementById('modal-btn');
+                btn.onclick = () => {
+                    if (onConfirm) onConfirm();
+                    else modal.classList.remove('show');
+                };
+            },
+
+            copyToClipboard(text, successCb, failCb) {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(successCb).catch(failCb || (() => {}));
+                } else {
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = 0;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    try {
+                        document.execCommand('copy');
+                        successCb();
+                    } catch (e) {
+                        if (failCb) failCb();
+                    }
+                    document.body.removeChild(ta);
+                }
+            }
+        };
+
+        const fireworks = {
+            canvas: null,
+            ctx: null,
+            particles: [],
+            rockets: [],
+            active: false,
+            
+            init() {
+                this.canvas = document.getElementById('fireworks-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+                this.loop();
+            },
+            
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            },
+            
+            start() {
+                this.active = true;
+            },
+            
+            stop() {
+                this.active = false;
+            },
+            
+            createRocket() {
+                if (!this.active) return;
+                
+                const x = (Math.random() * 0.6 + 0.2) * this.canvas.width;
+                const y = this.canvas.height;
+                const targetY = (Math.random() * 0.4 + 0.1) * this.canvas.height;
+                
+                this.rockets.push({
+                    x: x,
+                    y: y,
+                    targetY: targetY,
+                    speed: 8 + Math.random() * 4,
+                    color: '#fff'
+                });
+            },
+
+            createExplosion(x, y) {
+                const count = 80 + Math.random() * 50;
+                const colors = ['#ffeb3b', '#ffc107', '#ff5722', '#ffffff', '#e91e63', '#69f0ae', '#ffd700', '#ff6b6b', '#4ecdc4'];
+                
+                for(let i=0; i<count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const velocity = Math.random() * 5 + 3;
+                    
+                    this.particles.push({
+                        x: x,
+                        y: y,
+                        vx: Math.cos(angle) * velocity,
+                        vy: Math.sin(angle) * velocity,
+                        alpha: 1,
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        decay: 0.01 + Math.random() * 0.012,
+                        gravity: 0.08
+                    });
+                }
+            },
+            
+            loop() {
+                requestAnimationFrame(() => this.loop());
+                
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                if (this.active && Math.random() < 0.15) {
+                    this.createRocket();
+                }
+
+                for (let i = this.rockets.length - 1; i >= 0; i--) {
+                    let r = this.rockets[i];
+                    r.y -= r.speed;
+                    r.speed *= 0.98;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(r.x, r.y, 2, 0, Math.PI * 2);
+                    this.ctx.fillStyle = r.color;
+                    this.ctx.fill();
+                    
+                    if (r.y <= r.targetY || r.speed < 1) {
+                        this.createExplosion(r.x, r.y);
+                        this.rockets.splice(i, 1);
+                    }
+                }
+
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    let p = this.particles[i];
+                    
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += p.gravity;
+                    p.vx *= 0.95;
+                    p.vy *= 0.95;
+                    p.alpha -= p.decay;
+                    
+                    if (p.alpha <= 0) {
+                        this.particles.splice(i, 1);
+                        continue;
+                    }
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+                    this.ctx.fillStyle = p.color;
+                    this.ctx.globalAlpha = p.alpha;
+                    this.ctx.fill();
+                    this.ctx.shadowBlur = 8;
+                    this.ctx.shadowColor = p.color;
+                    this.ctx.globalAlpha = 1;
+                    this.ctx.shadowBlur = 0;
+                }
+            }
+        };
+
+        window.onload = () => app.init();
+
+    </script>
+</body>
+</html>
